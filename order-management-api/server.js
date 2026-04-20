@@ -6,6 +6,8 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json()); // Cho phep server doc JSON tu request body
+const orderRoutes = require('./routes/orderRoutes');
+app.use('/api/orders', orderRoutes);
 // Ket noi MongoDB
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ MongoDB Connected!'))
