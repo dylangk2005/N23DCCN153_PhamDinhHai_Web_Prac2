@@ -11,12 +11,35 @@ const sendResponse = (res, status, success, message, data = null) => {
     });
 };
 
-// 1. Lấy toàn bộ đơn hàng (GET /api/orders)
+// 1. Lấy danh sách đơn hàng (Tích hợp Lọc, Tìm kiếm, Sắp xếp)
 router.get('/', async (req, res) => {
     try {
-        const orders = await Order.find().sort({ createdAt: -1 });
-        // Response chuẩn hóa
-        sendResponse(res, 200, true, "Lấy danh sách đơn hàng thành công", orders);
+        const { status, name, sort } = req.query; // Lấy dữ liệu từ URL (?status=...&name=...)
+        let query = {};
+
+        // Yêu cầu 1: Lọc theo trạng thái đơn hàng
+        if (status) {
+            query.status = status;
+        }
+
+        // Yêu cầu 2: Tìm kiếm theo tên khách hàng (Dùng Regex để tìm kiếm gần đúng)
+        if (name) {
+            query.customerName = { $regex: name, $options: 'i' }; // 'i' là không phân biệt hoa thường
+        }
+
+        // Tạo biến để xử lý sắp xếp
+        let sortQuery = { createdAt: -1 }; // Mặc định là đơn mới nhất lên đầu
+
+        // Yêu cầu 3: Sắp xếp theo tổng tiền
+        if (sort === 'asc') {
+            sortQuery = { totalAmount: 1 };
+        } else if (sort === 'desc') {
+            sortQuery = { totalAmount: -1 };
+        }
+
+        const orders = await Order.find(query).sort(sortQuery);
+
+        sendResponse(res, 200, true, `Tìm thấy ${orders.length} đơn hàng`, orders);
     } catch (err) {
         sendResponse(res, 500, false, err.message);
     }
@@ -101,3 +124,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
