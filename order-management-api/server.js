@@ -9,7 +9,7 @@ const morgan = require('morgan');
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json()); // Cho phep server doc JSON tu request body
-const orderRoutes = require('./routes/orderRoutes');
+const orderRoutes = require('./routes/OrderRoutes');
 app.use('/api/orders', orderRoutes);
 
 // Ket noi MongoDB
